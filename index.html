@@ -1,11 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Chat App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Firebase Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; }
+    #chat { border: 1px solid #555; height: 300px; width: 80%; margin: 20px auto; padding: 10px; overflow-y: auto; background: #222; }
+    input, button { padding: 10px; margin: 5px; }
+    button { cursor: pointer; }
+  </style>
 </head>
-<body style="font-family: Arial; text-align: center; margin-top: 100px;">
-  <h1>🚀 Welcome to My Chat App</h1>
-  <p>This site is running on GitHub Pages!</p>
+<body>
+  <h1>🔥 My Chat App 🔥</h1>
+  
+  <div id="chat"></div>
+  
+  <input type="text" id="username" placeholder="Enter your name">
+  <input type="text" id="message" placeholder="Enter your message">
+  <button id="sendBtn">Send</button>
+
+  <!-- ✅ Firebase script goes here -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } 
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMu-YnJlejHVc8hCE9CAb-vP9LUQsTsBg",
+      authDomain: "my-chat-app-c9155.firebaseapp.com",
+      projectId: "my-chat-app-c9155",
+      storageBucket: "my-chat-app-c9155.firebasestorage.app",
+      messagingSenderId: "587936751169",
+      appId: "1:587936751169:web:c1a8407c90696bda0930c0",
+      measurementId: "G-73SGYPWG6C"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // Send message
+    async function sendMessage(username, text) {
+      try {
+        await addDoc(collection(db, "messages"), {
+          username: username,
+          text: text,
+          timestamp: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Error adding message: ", e);
+      }
+    }
+
+    // Listen for new messages
+    const messagesQuery = query(collection(db, "messages"), orderBy("timestamp"));
+    onSnapshot(messagesQuery, snapshot => {
+      const chatBox = document.getElementById("chat");
+      chatBox.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        chatBox.innerHTML += `<p><b>${msg.username}:</b> ${msg.text}</p>`;
+      });
+    });
+
+    // Button click event
+    document.getElementById("sendBtn").addEventListener("click", () => {
+      const username = document.getElementById("username").value || "Anon";
+      const message = document.getElementById("message").value;
+      if (message.trim() !== "") {
+        sendMessage(username, message);
+        document.getElementById("message").value = "";
+      }
+    });
+  </script>
 </body>
 </html>
